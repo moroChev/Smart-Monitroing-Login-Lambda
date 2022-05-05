@@ -1,0 +1,6 @@
+[
+  {
+    "ParameterKey": "SpokeNameUpperCase",
+    "ParameterValue": "#{SpokeNameUpperCase}#"
+  }
+]

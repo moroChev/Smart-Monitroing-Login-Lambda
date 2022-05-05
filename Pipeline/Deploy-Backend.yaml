@@ -1,0 +1,35 @@
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '10.x'
+    displayName: 'Install Node.js'
+
+  - script: |
+      cd Functions
+      cd backend
+      npm install
+      npm run build
+    displayName: 'npm install and build'
+
+  - script: |
+      cp Functions/backend/*.json Functions/backend/build
+      cp Functions/backend/src/config/*.pem Functions/backend/build/config
+    displayName: 'Copy Package and Key files'
+
+  - task: AWSShellScript@1
+    displayName: 'Build'
+    inputs:
+      awsCredentials: AwsServiceConnection
+      regionName: $(Region)
+      scriptType: 'inline'
+      inlineScript: |
+        sam build --debug --template-file ./Functions/backend/sam-template.yaml
+
+  - task: AWSShellScript@1
+    displayName: 'Deploy CF'
+    inputs:
+      awsCredentials: AwsServiceConnection
+      regionName: $(Region)
+      scriptType: 'inline'
+      inlineScript: |
+        sam deploy --stack-name $(Stackname) --capabilities CAPABILITY_NAMED_IAM --s3-bucket $(BackendBucket) --region us-east-1 --no-fail-on-empty-changeset
